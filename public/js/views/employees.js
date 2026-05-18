@@ -72,9 +72,10 @@ function _empTable(employees, types, inactive = false) {
               <button class="btn btn-secondary btn-sm" title="Notas y Agenda Personal" onclick="_showNotesModal(${JSON.stringify(e).replace(/"/g,'&quot;')})">📋 Notas</button>
               <button class="btn btn-secondary btn-sm" onclick="_showEmpModal(${JSON.stringify(e).replace(/"/g,'&quot;')})">✏️</button>
               ${inactive
-                ? `<button class="btn btn-success btn-sm" onclick="_reactivateEmp(${e.id})">↩️ Reactivar</button>`
-                : `<button class="btn btn-danger btn-sm" onclick="_deactivateEmp(${e.id})">🚫</button>`
+                ? `<button class="btn btn-success btn-sm" onclick="_reactivateEmp(${e.id})" title="Reactivar">↩️ Reactivar</button>`
+                : `<button class="btn btn-danger btn-sm" onclick="_deactivateEmp(${e.id})" title="Desactivar">🚫</button>`
               }
+              <button class="btn btn-danger btn-sm" title="Eliminar Permanentemente" onclick="_deleteEmpPermanent(${e.id}, '${e.name.replace(/'/g, "\\'")}')">🗑️</button>
             </div>
           </td>
         </tr>`).join('')}
@@ -173,6 +174,30 @@ async function _reactivateEmp(id) {
   await API.updateEmployee(id, { ...emp, active: 1 });
   await renderEmployees(document.getElementById('view-container'));
   toast('✅ Empleado reactivado', 'success');
+}
+
+async function _deleteEmpPermanent(id, name) {
+  // Primera confirmación
+  const firstOk = await Modal.confirm(
+    '⚠️ Eliminar empleado (Paso 1 de 2)',
+    `¿Estás seguro de que deseas eliminar permanentemente a <strong>${name}</strong>? Esta acción no se puede deshacer.`
+  );
+  if (!firstOk) return;
+
+  // Segunda confirmación
+  const secondOk = await Modal.confirm(
+    '🚨 Confirmación definitiva (Paso 2 de 2)',
+    `¡ATENCIÓN! Estás a punto de borrar permanentemente a <strong>${name}</strong> de la base de datos junto con todas sus notas personales.<br><br>¿Confirmas la eliminación definitiva?`
+  );
+  if (!secondOk) return;
+
+  try {
+    await API.deleteEmployeePermanent(id);
+    await renderEmployees(document.getElementById('view-container'));
+    toast('✅ Empleado eliminado permanentemente', 'success');
+  } catch (e) {
+    toast(e.message, 'error');
+  }
 }
 
 async function _showTypeModal() {

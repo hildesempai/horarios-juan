@@ -90,6 +90,22 @@ router.delete('/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// DELETE /api/employees/:id/permanent (hard delete)
+router.delete('/:id/permanent', (req, res) => {
+  const db = getDb();
+  const entriesCount = db.prepare('SELECT COUNT(*) as count FROM schedule_entries WHERE employee_id = ?').get(req.params.id).count;
+  const blocksCount = db.prepare('SELECT COUNT(*) as count FROM off_day_blocks WHERE employee_id = ?').get(req.params.id).count;
+  
+  if (entriesCount > 0 || blocksCount > 0) {
+    return res.status(400).json({
+      error: 'No se puede eliminar permanentemente a este empleado porque tiene historial de turnos o días libres en los cronogramas. Si ya no trabaja aquí, desactívalo (Inactivo).'
+    });
+  }
+  
+  db.prepare('DELETE FROM employees WHERE id = ?').run(req.params.id);
+  res.json({ ok: true });
+});
+
 // GET /api/employees/:id/notes
 router.get('/:id/notes', (req, res) => {
   const db = getDb();

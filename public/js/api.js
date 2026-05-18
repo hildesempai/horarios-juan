@@ -28,6 +28,7 @@ const API = {
   createEmployee:     (data) => API.post('/api/employees', data),
   updateEmployee:     (id, data) => API.put(`/api/employees/${id}`, data),
   deleteEmployee:     (id)   => API.delete(`/api/employees/${id}`),
+  deleteEmployeePermanent: (id) => API.delete(`/api/employees/${id}/permanent`),
   getEmployeeNotes:   (id)   => API.get(`/api/employees/${id}/notes`),
   createEmployeeNote: (id, data) => API.post(`/api/employees/${id}/notes`, data),
   deleteEmployeeNote: (noteId) => API.delete(`/api/employees/notes/${noteId}`),
