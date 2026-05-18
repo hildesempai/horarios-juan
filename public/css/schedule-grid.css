@@ -189,3 +189,225 @@
 }
 .week-tab:hover  { background: var(--bg-400); color: var(--text-100); }
 .week-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Estilos de Impresión Profesional (A4 Horizontal) ─────────────────── */
+@media print {
+  :root {
+    --bg-900: #ffffff !important;
+    --bg-800: #f9fafb !important;
+    --bg-700: #ffffff !important;
+    --bg-600: #f3f4f6 !important;
+    --border: #e5e7eb !important;
+    --text-100: #111827 !important;
+    --text-200: #1f2937 !important;
+    --text-300: #374151 !important;
+    --text-400: #4b5563 !important;
+    --shift-morning: #fef3c7 !important;
+    --shift-afternoon: #ffe4e6 !important;
+    --shift-night: #e0f2fe !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Ocultar elementos innecesarios */
+  .sidebar,
+  .page-header-actions,
+  .period-selector,
+  .week-tabs,
+  .notes-bar,
+  .employee-palette,
+  .employee-balance,
+  .btn,
+  #toast-container,
+  .login-overlay,
+  #modal-overlay {
+    display: none !important;
+  }
+
+  /* Ajustar contenedor principal */
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .page {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .section-title {
+    font-size: 20pt !important;
+    color: #111827 !important;
+    text-align: center !important;
+    margin-bottom: 5px !important;
+    margin-top: 10px !important;
+  }
+
+  .section-subtitle {
+    font-size: 11pt !important;
+    color: #4b5563 !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Tabla de cuadrícula */
+  .schedule-grid-outer {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    width: 100% !important;
+  }
+
+  .schedule-grid {
+    width: 100% !important;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+  }
+
+  .day-header {
+    background: #f3f4f6 !important;
+    border-bottom: 1px solid #d1d5db !important;
+    border-right: 1px solid #d1d5db !important;
+    padding: 8px 4px !important;
+  }
+
+  .day-name {
+    color: #4b5563 !important;
+    font-size: 8pt !important;
+  }
+
+  .day-date {
+    color: #111827 !important;
+    font-size: 10pt !important;
+  }
+
+  .shift-label-cell {
+    background: #f9fafb !important;
+    border-right: 1px solid #d1d5db !important;
+    border-bottom: 1px solid #d1d5db !important;
+    padding: 8px 4px !important;
+    width: 80px !important;
+  }
+
+  .shift-label-name {
+    color: #1f2937 !important;
+    font-size: 9pt !important;
+  }
+
+  .shift-label-hours {
+    color: #4b5563 !important;
+    font-size: 8pt !important;
+  }
+
+  .shift-cell {
+    border-right: 1px solid #d1d5db !important;
+    border-bottom: 1px solid #d1d5db !important;
+    padding: 6px !important;
+    min-height: 60px !important;
+  }
+
+  /* Opcion: A Color (print-color) */
+  body.print-color .shift-cell.morning { background-color: #fef3c7 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body.print-color .shift-cell.afternoon { background-color: #ffe4e6 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body.print-color .shift-cell.night { background-color: #e0f2fe !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  body.print-color .emp-token {
+    font-size: 9pt !important;
+    padding: 3px 6px !important;
+    border-radius: 4px !important;
+    border: 1px solid var(--emp-border) !important;
+    background-color: var(--emp-bg) !important;
+    color: var(--emp-color) !important;
+    font-weight: 800 !important;
+    display: inline-block !important;
+    margin-bottom: 3px !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    text-align: center !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.print-color .off-chip {
+    font-size: 8pt !important;
+    border: 1px solid var(--emp-color) !important;
+    background-color: var(--emp-bg) !important;
+    color: var(--emp-color) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.print-color .print-emoji {
+    display: inline !important;
+  }
+
+  /* Opcion: Blanco y Negro Simple (print-bw) */
+  body.print-bw .shift-cell.morning,
+  body.print-bw .shift-cell.afternoon,
+  body.print-bw .shift-cell.night {
+    background-color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.print-bw .emp-token {
+    font-size: 9pt !important;
+    padding: 3px 6px !important;
+    border-radius: 4px !important;
+    border: 1px solid #9ca3af !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    font-weight: 800 !important;
+    display: inline-block !important;
+    margin-bottom: 3px !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    text-align: center !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.print-bw .off-chip {
+    font-size: 8pt !important;
+    border: 1px solid #9ca3af !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.print-bw .print-emoji {
+    display: none !important;
+  }
+
+  /* Compartidos / Estáticos */
+  .emp-token.locked::after {
+    display: none !important;
+  }
+
+  .off-row-cell {
+    background: #ffffff !important;
+    border-right: 1px solid #d1d5db !important;
+    border-bottom: 1px solid #d1d5db !important;
+    padding: 6px !important;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+}

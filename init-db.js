@@ -92,9 +92,9 @@ db.exec(`
 // ── Seed ────────────────────────────────────────────────────────────────────
 // Tipos de empleado
 db.prepare("INSERT OR IGNORE INTO employee_types (name, off_days, consecutive_off, description) VALUES (?, ?, ?, ?)")
-  .run('Local',   2, 1, 'Empleado residente, 2 días libres por período');
+  .run('Local',   2, 0, 'Empleado residente, 2 días libres por período (no necesariamente consecutivos)');
 db.prepare("INSERT OR IGNORE INTO employee_types (name, off_days, consecutive_off, description) VALUES (?, ?, ?, ?)")
-  .run('Foráneo', 3, 1, 'Empleado externo, 3 días libres por período');
+  .run('Foráneo', 3, 1, 'Empleado externo, 3 días libres CONSECUTIVOS por período');
 
 const localType  = db.prepare('SELECT id FROM employee_types WHERE name = ?').get('Local');
 const foraneType = db.prepare('SELECT id FROM employee_types WHERE name = ?').get('Foráneo');

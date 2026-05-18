@@ -48,7 +48,7 @@ router.get('/:id', (req, res) => {
 
 // POST /api/schedules/generate — generar nuevo período automáticamente
 router.post('/generate', (req, res) => {
-  const { start_date, end_date } = req.body;
+  const { start_date, end_date, requested_off_days } = req.body;
   if (!start_date || !end_date)
     return res.status(400).json({ error: 'start_date y end_date son requeridos' });
 
@@ -86,7 +86,8 @@ router.post('/generate', (req, res) => {
     endDate:   end_date,
     employees,
     shiftTypes,
-    lockedEntries: []
+    lockedEntries: [],
+    requested_off_days: requested_off_days || {}
   });
 
   // Persistir con transacción manual (node:sqlite no tiene db.transaction())
@@ -146,6 +147,51 @@ router.put('/:id/entry', (req, res) => {
   // Actualizar timestamp del período
   db.prepare("UPDATE schedule_periods SET updated_at=datetime('now') WHERE id=?").run(req.params.id);
   res.json({ ok: true });
+});
+
+// PUT /api/schedules/:id/swap — intercambiar o reemplazar turnos (drag & drop)
+router.put('/:id/swap', (req, res) => {
+  const { source, target, action } = req.body; 
+  // source: { date, shift, pos, emp }
+  // target: { date, shift, pos, emp }
+  // action: 'swap' | 'replace'
+  const db = getDb();
+  
+  try {
+    db.exec('BEGIN');
+    
+    // Eliminar origen (si viene de una celda y no de la paleta)
+    if (source.date) {
+      db.prepare('DELETE FROM schedule_entries WHERE period_id=? AND entry_date=? AND shift_type_id=? AND position=?')
+        .run(req.params.id, source.date, source.shift, source.pos);
+    }
+      
+    // Eliminar destino
+    if (target.date) {
+      db.prepare('DELETE FROM schedule_entries WHERE period_id=? AND entry_date=? AND shift_type_id=? AND position=?')
+        .run(req.params.id, target.date, target.shift, target.pos);
+    }
+      
+    const insert = db.prepare(`
+      INSERT INTO schedule_entries (period_id, entry_date, shift_type_id, employee_id, position, is_locked)
+      VALUES (?, ?, ?, ?, ?, 1)
+    `);
+    
+    // Mover Source -> Target
+    if (source.emp) insert.run(req.params.id, target.date, target.shift, source.emp, target.pos);
+    
+    // Si es SWAP, mover Target -> Source (solo si el origen existía)
+    if (action === 'swap' && target.emp && source.date) {
+      insert.run(req.params.id, source.date, source.shift, target.emp, source.pos);
+    }
+    
+    db.prepare("UPDATE schedule_periods SET updated_at=datetime('now') WHERE id=?").run(req.params.id);
+    db.exec('COMMIT');
+    res.json({ ok: true });
+  } catch (e) {
+    db.exec('ROLLBACK');
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // PUT /api/schedules/:id/lock — bloquear/desbloquear una celda

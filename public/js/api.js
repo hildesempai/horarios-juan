@@ -47,6 +47,7 @@ const API = {
   generateSchedule: (data)    => API.post('/api/schedules/generate', data),
   updateEntry:      (id, data) => API.put(`/api/schedules/${id}/entry`, data),
   lockEntry:        (id, data) => API.put(`/api/schedules/${id}/lock`, data),
+  swapEntry:        (id, data) => API.put(`/api/schedules/${id}/swap`, data),
   rebalance:        (id)      => API.post(`/api/schedules/${id}/rebalance`),
   setStatus:        (id, s)   => API.put(`/api/schedules/${id}/status`, { status: s }),
   setNotes:         (id, n)   => API.put(`/api/schedules/${id}/notes`, { notes: n }),
