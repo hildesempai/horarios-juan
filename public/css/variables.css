@@ -1,0 +1,88 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — variables.css
+   Paleta oscura premium con acentos vibrantes
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Colores base ─────────────────────────────── */
+  --bg-900:   #0b0d14;
+  --bg-800:   #111422;
+  --bg-700:   #181c2e;
+  --bg-600:   #1f2438;
+  --bg-500:   #252a42;
+  --bg-400:   #2d3452;
+  --border:   rgba(255,255,255,0.08);
+  --border-md: rgba(255,255,255,0.14);
+
+  /* ── Texto ────────────────────────────────────── */
+  --text-100:  #f0f2ff;
+  --text-200:  #b8bdd8;
+  --text-300:  #7c84a8;
+  --text-400:  #4f5678;
+
+  /* ── Acento principal (violeta-azul) ─────────── */
+  --accent:       #6366f1;
+  --accent-light: #818cf8;
+  --accent-dark:  #4338ca;
+  --accent-glow:  rgba(99,102,241,0.35);
+
+  /* ── Semánticos ───────────────────────────────── */
+  --success:    #10b981;
+  --success-bg: rgba(16,185,129,0.12);
+  --warning:    #f59e0b;
+  --warning-bg: rgba(245,158,11,0.12);
+  --danger:     #ef4444;
+  --danger-bg:  rgba(239,68,68,0.12);
+  --info:       #3b82f6;
+  --info-bg:    rgba(59,130,246,0.12);
+
+  /* ── Turnos ──────────────────────────────────── */
+  --shift-morning:  rgba(245,158,11,0.18);
+  --shift-morning-b:#f59e0b;
+  --shift-afternoon:rgba(59,130,246,0.18);
+  --shift-afternoon-b:#3b82f6;
+  --shift-night:    rgba(139,92,246,0.18);
+  --shift-night-b:  #8b5cf6;
+
+  /* ── Tipografía ──────────────────────────────── */
+  --font:   'Inter', system-ui, -apple-system, sans-serif;
+  --text-xs: .7rem;
+  --text-sm: .8rem;
+  --text-md: .9rem;
+  --text-base: 1rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+
+  /* ── Espaciado ───────────────────────────────── */
+  --sp-1: .25rem;
+  --sp-2: .5rem;
+  --sp-3: .75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+
+  /* ── Bordes ──────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* ── Sombras ─────────────────────────────────── */
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+  --shadow:    0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+  --shadow-glow: 0 0 24px var(--accent-glow);
+
+  /* ── Transiciones ────────────────────────────── */
+  --transition: 0.18s ease;
+  --transition-md: 0.28s ease;
+
+  /* ── Layout ──────────────────────────────────── */
+  --sidebar-w: 220px;
+}
