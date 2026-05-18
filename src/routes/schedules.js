@@ -173,19 +173,51 @@ router.post('/:id/rebalance', (req, res) => {
 
   const shiftTypes = db.prepare('SELECT * FROM shift_types WHERE active=1 ORDER BY sort_order').all();
 
-  // Obtener entradas locked
+  // Obtener entradas locked (el motor respeta estas)
   const lockedEntries = db.prepare(`
     SELECT entry_date, shift_type_id, employee_id, position
     FROM schedule_entries
     WHERE period_id=? AND is_locked=1
   `).all(req.params.id);
 
+  // Obtener TODAS las entradas actuales para detectar patrones 24h
+  // (aunque no estén locked, si alguien hizo 24h no locked, también debe librar)
+  const allCurrentEntries = db.prepare(`
+    SELECT entry_date, shift_type_id, employee_id, position, is_locked
+    FROM schedule_entries
+    WHERE period_id=?
+  `).all(req.params.id);
+
+  // Detectar empleados con patrón 24h en entradas no-locked y forzar locked
+  // para que el motor los respete al generar el día siguiente libre
+  const shiftCount = {};
+  for (const e of allCurrentEntries) {
+    const key = `${e.entry_date}|${e.employee_id}`;
+    if (!shiftCount[key]) shiftCount[key] = [];
+    shiftCount[key].push(e.shift_type_id);
+  }
+  // Si alguien tiene los 3 turnos ese día (24h), añadir esas entradas a locked
+  // para que el scheduler detecte el patrón y bloquee el día siguiente
+  const extraLocked = [];
+  for (const [key, shiftIds] of Object.entries(shiftCount)) {
+    if (shiftIds.length >= shiftTypes.length) {
+      const [date, empIdStr] = key.split('|');
+      const empId = Number(empIdStr);
+      for (const e of allCurrentEntries.filter(
+        e => e.entry_date === date && e.employee_id === empId && !e.is_locked
+      )) {
+        extraLocked.push(e);
+      }
+    }
+  }
+  const mergedLocked = [...lockedEntries, ...extraLocked];
+
   const { entries, offBlocks, warnings } = generateSchedule({
     startDate: period.start_date,
     endDate:   period.end_date,
     employees,
     shiftTypes,
-    lockedEntries
+    lockedEntries: mergedLocked
   });
 
   // Reemplazar entradas no-locked con transacción manual
