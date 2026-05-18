@@ -2,6 +2,10 @@
    SCHEDULE-GRID.CSS — Grid visual de horarios + Drag & Drop
    ══════════════════════════════════════════════════════════════════════ */
 
+/* Elementos de impresión/pantalla */
+.print-only { display: none !important; }
+.print-footer { display: none !important; }
+
 /* ── Contenedor principal ───────────────────────────────────────────── */
 .schedule-wrapper { display: flex; flex-direction: column; gap: var(--sp-4); }
 
@@ -239,8 +243,33 @@
   }
 
   .page {
-    padding: 0 !important;
+    padding: 10mm 15mm 15mm 15mm !important;
     margin: 0 !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    min-height: 100vh !important;
+  }
+
+  .screen-only {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-footer {
+    display: block !important;
+    position: fixed !important;
+    bottom: 6mm !important;
+    left: 15mm !important;
+    font-size: 7.5pt !important;
+    font-weight: 600 !important;
+    color: #9ca3af !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    z-index: 9999 !important;
   }
 
   .section-title {
@@ -408,6 +437,6 @@
 
   @page {
     size: A4 landscape;
-    margin: 10mm;
+    margin: 0 !important;
   }
 }

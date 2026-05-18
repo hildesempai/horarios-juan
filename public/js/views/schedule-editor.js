@@ -116,7 +116,8 @@ function _renderFull(container) {
       <div class="page-header">
         <div>
           <div class="section-title">Horarios</div>
-          <div class="section-subtitle">Editor visual de turnos — Drag & Drop</div>
+          <div class="section-subtitle screen-only">Editor visual de turnos — Drag & Drop</div>
+          <div class="section-subtitle print-only">agrovet quintero semana del ${formatDate(weekDates[0])} al ${formatDate(weekDates[weekDates.length - 1])}</div>
         </div>
         <div class="page-header-actions">
           <button class="btn btn-secondary btn-sm" onclick="_showGenerateModal(document.getElementById('view-container'))">
@@ -208,6 +209,7 @@ function _renderFull(container) {
           </div>
         </div>
       </div>
+      <div class="print-footer">by: minworkstudio</div>
     </div>`;
 
   // ── Setup drag & drop on cells ──
