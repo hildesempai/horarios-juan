@@ -19,7 +19,7 @@ if %ERRORLEVEL% NEQ 0 (
     ) else (
         color 0E
         echo  [INFO] Node.js no esta instalado en el equipo.
-        echo  [INFO] Descargando el instalador automaticamente (v22 LTS)...
+        echo  [INFO] Descargando el instalador automaticamente - v22 LTS...
         echo.
         powershell -Command "Invoke-WebRequest -Uri 'https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi' -OutFile '%TEMP%\nodejs.msi'"
         
@@ -31,7 +31,7 @@ if %ERRORLEVEL% NEQ 0 (
             exit /b 1
         )
         
-        echo  [INFO] Instalando Node.js... (Aprueba los permisos de Administrador si aparecen)
+        echo  [INFO] Instalando Node.js... - Aprueba los permisos de Administrador si aparecen -
         msiexec.exe /i "%TEMP%\nodejs.msi" /passive /norestart
         
         if exist "%ProgramFiles%\nodejs\node.exe" (
