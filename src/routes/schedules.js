@@ -18,6 +18,45 @@ router.get('/', (req, res) => {
   res.json(periods);
 });
 
+// GET /api/schedules/published/entries — obtener entradas de períodos publicados
+router.get('/published/entries', (req, res) => {
+  const db = getDb();
+  
+  // Obtener todos los periodos publicados
+  const periods = db.prepare(`
+    SELECT * FROM schedule_periods
+    WHERE status = 'published'
+    ORDER BY start_date DESC
+  `).all();
+  
+  if (periods.length === 0) {
+    return res.json({ periods: [], entries: [], offBlocks: [] });
+  }
+  
+  const periodIds = periods.map(p => p.id);
+  const placeholders = periodIds.map(() => '?').join(',');
+  
+  const entries = db.prepare(`
+    SELECT se.*, e.name as emp_name, e.abbreviation, e.color,
+           st.name as shift_name, st.start_time, st.end_time, st.sort_order
+    FROM schedule_entries se
+    JOIN employees e ON se.employee_id = e.id
+    JOIN shift_types st ON se.shift_type_id = st.id
+    WHERE se.period_id IN (${placeholders})
+    ORDER BY se.entry_date, st.sort_order, se.position
+  `).all(...periodIds);
+
+  const offBlocks = db.prepare(`
+    SELECT ob.*, e.name as emp_name, e.abbreviation, e.color
+    FROM off_day_blocks ob
+    JOIN employees e ON ob.employee_id = e.id
+    WHERE ob.period_id IN (${placeholders})
+    ORDER BY ob.start_date
+  `).all(...periodIds);
+
+  res.json({ periods, entries, offBlocks });
+});
+
 // GET /api/schedules/:id — detalle completo de un período
 router.get('/:id', (req, res) => {
   const db = getDb();

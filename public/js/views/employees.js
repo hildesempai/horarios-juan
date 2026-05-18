@@ -69,6 +69,7 @@ function _empTable(employees, types, inactive = false) {
           <td><span class="badge badge-muted">${e.off_days || '?'} días</span></td>
           <td>
             <div style="display:flex;gap:var(--sp-2)">
+              <button class="btn btn-secondary btn-sm" title="Notas y Agenda Personal" onclick="_showNotesModal(${JSON.stringify(e).replace(/"/g,'&quot;')})">📋 Notas</button>
               <button class="btn btn-secondary btn-sm" onclick="_showEmpModal(${JSON.stringify(e).replace(/"/g,'&quot;')})">✏️</button>
               ${inactive
                 ? `<button class="btn btn-success btn-sm" onclick="_reactivateEmp(${e.id})">↩️ Reactivar</button>`
@@ -237,4 +238,418 @@ async function _deleteType(id) {
     await _showTypeModal();
     toast('Tipo eliminado', 'info');
   } catch(e) { toast(e.message, 'error'); }
+}
+
+async function _showNotesModal(emp) {
+  let notes = [];
+  try {
+    notes = await API.getEmployeeNotes(emp.id);
+  } catch (e) {
+    toast(e.message, 'error');
+    return;
+  }
+
+  let year = new Date().getFullYear();
+  let month = new Date().getMonth();
+
+  const containerId = `notes-modal-content-${emp.id}`;
+
+  const styles = `
+    <style>
+      .notes-modal-layout {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: var(--sp-4);
+        min-height: 480px;
+        color: var(--text-200);
+      }
+      @media (max-width: 768px) {
+        .notes-modal-layout {
+          grid-template-columns: 1fr;
+          min-height: auto;
+        }
+      }
+      .notes-pane-left {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-4);
+        border-right: 1px solid var(--border);
+        padding-right: var(--sp-4);
+      }
+      .notes-pane-right {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-3);
+      }
+      .note-entry-form {
+        background: var(--bg-600);
+        padding: var(--sp-3);
+        border-radius: var(--radius);
+        border: 1px solid var(--border-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-2);
+      }
+      .notes-scroller {
+        max-height: 250px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-2);
+        padding-right: 4px;
+      }
+      .note-item {
+        background: var(--bg-600);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: var(--sp-2) var(--sp-3);
+        position: relative;
+        border-left: 4px solid var(--tag-color, var(--text-400));
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .note-item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex-grow: 1;
+      }
+      .note-item-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        font-size: 10px;
+      }
+      .note-item-date {
+        color: var(--text-300);
+        font-weight: 600;
+      }
+      .note-item-tag {
+        text-transform: uppercase;
+        font-weight: 700;
+        font-size: 8px;
+        padding: 1px 6px;
+        border-radius: var(--radius-full);
+        background: var(--tag-bg);
+        color: var(--tag-color);
+      }
+      .note-item-body {
+        color: var(--text-100);
+        font-size: var(--text-sm);
+        white-space: pre-wrap;
+        line-height: 1.4;
+      }
+      .note-del-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: var(--text-sm);
+        color: var(--text-400);
+        transition: color var(--transition);
+        padding: 0 0 0 var(--sp-2);
+      }
+      .note-del-btn:hover {
+        color: var(--danger);
+      }
+      
+      /* Mini calendar styles */
+      .mini-cal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg-800);
+        padding: var(--sp-2);
+        border-radius: var(--radius-sm);
+      }
+      .mini-cal-title {
+        font-weight: 700;
+        font-size: var(--text-sm);
+        color: var(--text-100);
+      }
+      .mini-cal-nav {
+        display: flex;
+        gap: 2px;
+      }
+      .mini-cal-btn {
+        background: var(--bg-600);
+        border: 1px solid var(--border);
+        color: var(--text-200);
+        padding: 2px 6px;
+        font-size: 10px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+      }
+      .mini-cal-btn:hover {
+        background: var(--bg-500);
+      }
+      .mini-cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        background: var(--bg-800);
+        border-radius: var(--radius-sm);
+        padding: var(--sp-2);
+      }
+      .mini-cal-day-header {
+        text-align: center;
+        font-weight: 700;
+        font-size: 8px;
+        color: var(--text-300);
+        text-transform: uppercase;
+        padding-bottom: 2px;
+      }
+      .mini-cal-day {
+        aspect-ratio: 1.1;
+        background: var(--bg-700);
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-200);
+        position: relative;
+        cursor: pointer;
+        transition: background var(--transition);
+      }
+      .mini-cal-day:hover {
+        background: var(--bg-600);
+      }
+      .mini-cal-day.other-month {
+        opacity: 0.15;
+        pointer-events: none;
+      }
+      .mini-cal-day.active-date {
+        border: 1px solid var(--accent);
+      }
+      .mini-cal-dots {
+        display: flex;
+        gap: 2px;
+        position: absolute;
+        bottom: 2px;
+      }
+      .mini-cal-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+      }
+    </style>
+  `;
+
+  const TAGS_META = {
+    positivo: { label: 'Positivo 🟢', color: '#10b981', bg: 'rgba(16,185,129,0.15)' },
+    negativo: { label: 'Negativo 🔴', color: '#ef4444', bg: 'rgba(239,68,68,0.15)' },
+    neutral: { label: 'Neutral ⚪', color: '#b8bdd8', bg: 'rgba(184,189,216,0.15)' },
+    importante: { label: 'Importante 🟡', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
+    licencia: { label: 'Licencia 🔵', color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
+    llamada_atencion: { label: 'Llamada de atención 🟣', color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)' },
+    capacitacion: { label: 'Capacitación 🟢', color: '#06b6d4', bg: 'rgba(6,182,212,0.15)' }
+  };
+
+  const renderContent = () => {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    // Formulario de agregar nota
+    const tagOptions = Object.entries(TAGS_META).map(([key, val]) =>
+      `<option value="${key}">${val.label}</option>`
+    ).join('');
+
+    // Listado de notas
+    const notesHTML = notes.map(note => {
+      const meta = TAGS_META[note.tag] || { label: note.tag, color: '#7c84a8', bg: 'rgba(255,255,255,0.05)' };
+      return `
+        <div class="note-item" style="--tag-color: ${meta.color}">
+          <div class="note-item-content">
+            <div class="note-item-meta">
+              <span class="note-item-date">${formatDate(note.note_date)}</span>
+              <span class="note-item-tag" style="background:${meta.bg};color:${meta.color}">${note.tag}</span>
+            </div>
+            <div class="note-item-body">${note.content}</div>
+          </div>
+          <button class="note-del-btn" data-id="${note.id}" title="Eliminar nota">🗑️</button>
+        </div>
+      `;
+    }).join('');
+
+    // Celdas del minicalendario
+    const firstDay = new Date(year, month, 1);
+    let startOffset = firstDay.getDay() - 1;
+    if (startOffset < 0) startOffset = 6;
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const totalDaysPrev = new Date(year, month, 0).getDate();
+
+    const cells = [];
+    for (let i = startOffset - 1; i >= 0; i--) {
+      cells.push({ dayNum: totalDaysPrev - i, isCurrent: false });
+    }
+    for (let d = 1; d <= totalDays; d++) {
+      cells.push({ dayNum: d, isCurrent: true });
+    }
+    const totalSlots = Math.ceil(cells.length / 7) * 7;
+    const nextMonthNeeded = totalSlots - cells.length;
+    for (let d = 1; d <= nextMonthNeeded; d++) {
+      cells.push({ dayNum: d, isCurrent: false });
+    }
+
+    const monthStr = String(month + 1).padStart(2, '0');
+    const prefix = `${year}-${monthStr}-`;
+
+    const gridHTML = cells.map(cell => {
+      if (!cell.isCurrent) {
+        return `<div class="mini-cal-day other-month">${cell.dayNum}</div>`;
+      }
+      const dateStr = `${prefix}${String(cell.dayNum).padStart(2, '0')}`;
+      const dayNotes = notes.filter(n => n.note_date === dateStr);
+
+      const dotsHTML = dayNotes.map(n => {
+        const meta = TAGS_META[n.tag] || { color: '#7c84a8' };
+        return `<span class="mini-cal-dot" style="background:${meta.color}" title="${n.tag}: ${n.content.slice(0, 20)}..."></span>`;
+      }).join('');
+
+      return `
+        <div class="mini-cal-day" data-date="${dateStr}">
+          <span>${cell.dayNum}</span>
+          <div class="mini-cal-dots">${dotsHTML}</div>
+        </div>
+      `;
+    }).join('');
+
+    const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    const weekHeadersHTML = daysOfWeek.map(d => `<div class="mini-cal-day-header">${d}</div>`).join('');
+
+    return `
+      <div class="notes-modal-layout" id="${containerId}">
+        <!-- Columna izquierda: notas e ingreso -->
+        <div class="notes-pane-left">
+          <div class="note-entry-form">
+            <div style="font-weight:700;font-size:var(--text-sm);color:var(--text-100)">➕ Nueva anotación</div>
+            <div class="form-row" style="gap:var(--sp-2)">
+              <div class="form-group" style="flex:1">
+                <label style="font-size:10px">Fecha</label>
+                <input type="date" id="new-note-date" class="form-input" style="padding:4px var(--sp-2);font-size:var(--text-sm)" value="${today()}" />
+              </div>
+              <div class="form-group" style="flex:1.2">
+                <label style="font-size:10px">Etiqueta</label>
+                <select id="new-note-tag" class="form-select" style="padding:4px var(--sp-2);font-size:var(--text-sm)">
+                  ${tagOptions}
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label style="font-size:10px">Comentario</label>
+              <textarea id="new-note-content" class="form-input" rows="2" style="font-size:var(--text-sm);resize:none" placeholder="Escribe detalles aquí..."></textarea>
+            </div>
+            <button id="btn-add-note" class="btn btn-primary btn-sm" style="align-self:flex-end">➕ Guardar Nota</button>
+          </div>
+
+          <div style="font-weight:700;font-size:var(--text-sm);color:var(--text-100)">📋 Historial de notas (${notes.length})</div>
+          <div class="notes-scroller">
+            ${notesHTML.length ? notesHTML : `<p style="color:var(--text-400);font-size:var(--text-sm);text-align:center;padding:var(--sp-4)">Sin notas cargadas.</p>`}
+          </div>
+        </div>
+
+        <!-- Columna derecha: agenda mensual -->
+        <div class="notes-pane-right">
+          <div style="font-weight:700;font-size:var(--text-sm);color:var(--text-100)">🗓️ Agenda Personal</div>
+          <div class="mini-cal-header">
+            <button class="mini-cal-btn" id="btn-prev-month">◀</button>
+            <div class="mini-cal-title">${months[month]} ${year}</div>
+            <button class="mini-cal-btn" id="btn-next-month">▶</button>
+          </div>
+          <div class="mini-cal-grid">
+            ${weekHeadersHTML}
+            ${gridHTML}
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  Modal.open(`Ficha de Empleado: ${emp.name}`, `
+    ${styles}
+    <div id="notes-modal-wrapper">${renderContent()}</div>
+  `, `<button class="btn btn-secondary" onclick="Modal.close()">Cerrar</button>`);
+
+  const attachEvents = () => {
+    // Navigation
+    document.getElementById('btn-prev-month').onclick = () => {
+      month--;
+      if (month < 0) {
+        month = 11;
+        year--;
+      }
+      refresh();
+    };
+    document.getElementById('btn-next-month').onclick = () => {
+      month++;
+      if (month > 11) {
+        month = 0;
+        year++;
+      }
+      refresh();
+    };
+
+    // Add Note
+    document.getElementById('btn-add-note').onclick = async () => {
+      const date = document.getElementById('new-note-date').value;
+      const tag = document.getElementById('new-note-tag').value;
+      const content = document.getElementById('new-note-content').value.trim();
+
+      if (!date || !content) {
+        toast('Fecha y contenido requeridos', 'warning');
+        return;
+      }
+
+      try {
+        await API.createEmployeeNote(emp.id, { note_date: date, content, tag });
+        notes = await API.getEmployeeNotes(emp.id);
+        toast('✅ Nota guardada', 'success');
+        refresh();
+      } catch (e) {
+        toast(e.message, 'error');
+      }
+    };
+
+    // Delete Notes
+    document.querySelectorAll('.note-del-btn').forEach(btn => {
+      btn.onclick = async () => {
+        const noteId = btn.dataset.id;
+        const confirm = await Modal.confirm('Eliminar nota', '¿Estás seguro de que quieres eliminar esta anotación?');
+        if (!confirm) return;
+
+        try {
+          await API.deleteEmployeeNote(noteId);
+          notes = await API.getEmployeeNotes(emp.id);
+          toast('Nota eliminada', 'info');
+          _showNotesModal(emp);
+        } catch (e) {
+          toast(e.message, 'error');
+        }
+      };
+    });
+
+    // Calendar day clicks (set form date)
+    document.querySelectorAll('.mini-cal-day').forEach(cell => {
+      cell.onclick = () => {
+        const date = cell.dataset.date;
+        if (date) {
+          document.getElementById('new-note-date').value = date;
+          document.querySelectorAll('.mini-cal-day').forEach(c => c.classList.remove('active-date'));
+          cell.classList.add('active-date');
+        }
+      };
+    });
+  };
+
+  const refresh = () => {
+    document.getElementById('notes-modal-wrapper').innerHTML = renderContent();
+    attachEvents();
+  };
+
+  attachEvents();
 }

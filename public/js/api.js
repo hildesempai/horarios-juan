@@ -28,6 +28,9 @@ const API = {
   createEmployee:     (data) => API.post('/api/employees', data),
   updateEmployee:     (id, data) => API.put(`/api/employees/${id}`, data),
   deleteEmployee:     (id)   => API.delete(`/api/employees/${id}`),
+  getEmployeeNotes:   (id)   => API.get(`/api/employees/${id}/notes`),
+  createEmployeeNote: (id, data) => API.post(`/api/employees/${id}/notes`, data),
+  deleteEmployeeNote: (noteId) => API.delete(`/api/employees/notes/${noteId}`),
 
   // Employee types
   getEmployeeTypes:   ()          => API.get('/api/employee-types'),
@@ -44,6 +47,7 @@ const API = {
   // Schedules
   getSchedules:     ()        => API.get('/api/schedules'),
   getSchedule:      (id)      => API.get(`/api/schedules/${id}`),
+  getPublishedEntries: ()     => API.get('/api/schedules/published/entries'),
   generateSchedule: (data)    => API.post('/api/schedules/generate', data),
   updateEntry:      (id, data) => API.put(`/api/schedules/${id}/entry`, data),
   lockEntry:        (id, data) => API.put(`/api/schedules/${id}/lock`, data),

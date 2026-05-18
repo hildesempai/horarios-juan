@@ -87,6 +87,15 @@ db.exec(`
     key   TEXT PRIMARY KEY,
     value TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS employee_notes (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+    note_date   TEXT NOT NULL,
+    content     TEXT NOT NULL,
+    tag         TEXT NOT NULL,
+    created_at  TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // ── Seed ────────────────────────────────────────────────────────────────────

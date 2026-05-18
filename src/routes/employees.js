@@ -90,4 +90,36 @@ router.delete('/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// GET /api/employees/:id/notes
+router.get('/:id/notes', (req, res) => {
+  const db = getDb();
+  const notes = db.prepare(`
+    SELECT * FROM employee_notes
+    WHERE employee_id = ?
+    ORDER BY note_date DESC, created_at DESC
+  `).all(req.params.id);
+  res.json(notes);
+});
+
+// POST /api/employees/:id/notes
+router.post('/:id/notes', (req, res) => {
+  const { note_date, content, tag } = req.body;
+  if (!note_date || !content || !tag) {
+    return res.status(400).json({ error: 'note_date, content y tag son requeridos' });
+  }
+  const db = getDb();
+  const result = db.prepare(`
+    INSERT INTO employee_notes (employee_id, note_date, content, tag)
+    VALUES (?, ?, ?, ?)
+  `).run(req.params.id, note_date, content, tag);
+  res.status(201).json({ id: result.lastInsertRowid });
+});
+
+// DELETE /api/employees/notes/:noteId
+router.delete('/notes/:noteId', (req, res) => {
+  const db = getDb();
+  db.prepare('DELETE FROM employee_notes WHERE id = ?').run(req.params.noteId);
+  res.json({ ok: true });
+});
+
 module.exports = router;

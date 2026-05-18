@@ -86,6 +86,7 @@ const App = {
       schedule:  () => renderScheduleEditor(container),
       employees: () => renderEmployees(container),
       history:   () => renderHistory(container),
+      calendar:  () => renderCalendarView(container),
       config:    () => renderConfig(container),
     };
 
