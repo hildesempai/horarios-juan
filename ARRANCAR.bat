@@ -9,14 +9,46 @@ echo  =====================================================
 echo.
 
 :: Verificar que Node.js esta instalado
+set NODE_EXE=node
+set NPM_CMD=npm
 where node >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    color 0C
-    echo  [ERROR] Node.js no esta instalado o no esta en el PATH.
-    echo  Descargalo desde: https://nodejs.org
-    echo.
-    pause
-    exit /b 1
+    if exist "%ProgramFiles%\nodejs\node.exe" (
+        set NODE_EXE="%ProgramFiles%\nodejs\node.exe"
+        set NPM_CMD="%ProgramFiles%\nodejs\npm.cmd"
+    ) else (
+        color 0E
+        echo  [INFO] Node.js no esta instalado en el equipo.
+        echo  [INFO] Descargando el instalador automaticamente (v22 LTS)...
+        echo.
+        powershell -Command "Invoke-WebRequest -Uri 'https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi' -OutFile '%TEMP%\nodejs.msi'"
+        
+        if not exist "%TEMP%\nodejs.msi" (
+            color 0C
+            echo  [ERROR] No se pudo descargar Node.js.
+            echo  Descargalo manualmente desde: https://nodejs.org
+            pause
+            exit /b 1
+        )
+        
+        echo  [INFO] Instalando Node.js... (Aprueba los permisos de Administrador si aparecen)
+        msiexec.exe /i "%TEMP%\nodejs.msi" /passive /norestart
+        
+        if exist "%ProgramFiles%\nodejs\node.exe" (
+            color 0A
+            echo  [OK] Node.js se instalo correctamente!
+            echo.
+            set NODE_EXE="%ProgramFiles%\nodejs\node.exe"
+            set NPM_CMD="%ProgramFiles%\nodejs\npm.cmd"
+            del /q "%TEMP%\nodejs.msi"
+        ) else (
+            color 0C
+            echo  [ERROR] La instalacion automatica fallo.
+            echo  Instala Node.js manualmente desde: https://nodejs.org
+            pause
+            exit /b 1
+        )
+    )
 )
 
 :: Ir al directorio del proyecto (donde esta este .bat)
@@ -26,7 +58,7 @@ cd /d "%~dp0"
 if not exist "node_modules" (
     echo  [INFO] Primera ejecucion detectada. Instalando dependencias...
     echo.
-    npm install
+    call %NPM_CMD% install
     if %ERRORLEVEL% NEQ 0 (
         color 0C
         echo  [ERROR] Fallo la instalacion de dependencias.
@@ -40,7 +72,7 @@ if not exist "node_modules" (
 if not exist "data\horarios.db" (
     echo  [INFO] Base de datos no encontrada. Inicializando...
     echo.
-    node init-db.js
+    %NODE_EXE% init-db.js
     if %ERRORLEVEL% NEQ 0 (
         color 0C
         echo  [ERROR] Fallo la inicializacion de la base de datos.
@@ -71,7 +103,7 @@ echo.
 start /b "" cmd /c "ping 127.0.0.1 -n 3 >nul && start http://localhost:3000"
 
 :: Arrancar el servidor
-node server.js
+%NODE_EXE% server.js
 
 echo.
 echo  [INFO] Servidor detenido.
